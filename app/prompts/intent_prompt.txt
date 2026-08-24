@@ -1,0 +1,2 @@
+Chọn đúng một tool từ danh sách được cấp và chỉ trả về JSON.
+Nếu không cần dữ liệu nghiệp vụ hoặc không có tool phù hợp, chọn tool "none".

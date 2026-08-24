@@ -1,0 +1,2 @@
+Không tạo tên tool mới. Không đặt URL trong tham số.
+Các định danh organizationId, branchId và customerId phải là số nguyên.

@@ -1,27 +1,28 @@
+"""Smoke test thủ công khi Ollama, Gateway và Identity đang chạy."""
+
 import asyncio
-import jwt
-from app.chatbot.orchestrator import ChatOrchestrator
+import os
+
 from dotenv import load_dotenv
+
+from app.chatbot.orchestrator import ChatOrchestrator
+
 
 load_dotenv()
 
-async def test_logic():
-    # 1. Tạo 1 token giả có role admin
-    payload = {"userId": "123", "role": "admin", "customerId": "CUST-001"}
-    token = jwt.encode(payload, "secret", algorithm="HS256")
-    
-    # 2. Khởi tạo orchestrator
-    orchestrator = ChatOrchestrator()
-    
-    # 3. Hỏi câu hỏi gọi tool
-    print("User: Cho tôi xem các báo giá đang chờ duyệt")
-    result = await orchestrator.handle_message(
-        message="Cho tôi xem các báo giá đang chờ duyệt",
+
+async def run_logic() -> None:
+    token = os.getenv("TEST_ACCESS_TOKEN")
+    if not token:
+        raise SystemExit("Hãy đặt TEST_ACCESS_TOKEN bằng access token thật trước khi chạy.")
+
+    result = await ChatOrchestrator().handle_message(
+        message="Tài khoản đang đăng nhập của tôi là ai?",
         token=token,
-        conversation_id="test-conv"
+        conversation_id="manual-smoke-test",
     )
-    print("\nSystem Tool Output:", result["data"])
-    print("\nAI Answer:", result["answer"])
-    
+    print(result)
+
+
 if __name__ == "__main__":
-    asyncio.run(test_logic())
+    asyncio.run(run_logic())

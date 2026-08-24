@@ -1,8 +1,15 @@
-from app.clients.api_gateway_client import ApiGatewayClient
+from typing import Any
 
-async def get_customer_info(client: ApiGatewayClient, token: str, customer_id: str):
-    """
-    Gọi qua API Gateway để lấy thông tin khách hàng.
-    """
-    endpoint = f"/customer-service/api/v1/customers/{customer_id}"
-    return await client.get(endpoint, token)
+from app.clients.api_gateway_client import ApiGatewayClient
+from app.tools.common import unwrap_gateway_data
+
+
+async def get_customer_info(
+    client: ApiGatewayClient,
+    token: str,
+    organization_id: int,
+    customer_id: int,
+) -> dict[str, Any]:
+    endpoint = f"/api/v1/organizations/{organization_id}/customers/{customer_id}"
+    response = await client.get(endpoint, token)
+    return unwrap_gateway_data(response)

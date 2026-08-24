@@ -1,16 +1,27 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=75"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "equipment-rental-ai"
-version = "0.1.0"
-description = "AI Chatbot Service for Equipment Rental"
+version = "0.2.0"
+description = "Independent FastAPI and Ollama chatbot for Equipment Rental"
+requires-python = ">=3.12"
 dependencies = [
-    "fastapi",
-    "uvicorn[standard]",
-    "httpx",
-    "pydantic-settings",
-    "python-dotenv",
-    "pyjwt",
+    "fastapi>=0.115,<1.0",
+    "uvicorn[standard]>=0.34,<1.0",
+    "httpx>=0.28,<1.0",
+    "pydantic-settings>=2.7,<3.0",
+    "python-dotenv>=1.0,<2.0",
+    "PyJWT>=2.10,<3.0",
 ]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=8.3,<10.0",
+    "pytest-asyncio>=0.25,<2.0",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

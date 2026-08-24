@@ -1,10 +1,13 @@
 import uvicorn
-import os
-from dotenv import load_dotenv
 
-load_dotenv()
+from app.core.config import get_settings
+
 
 if __name__ == "__main__":
-    host = os.getenv("APP_HOST", "0.0.0.0")
-    port = int(os.getenv("APP_PORT", 8090))
-    uvicorn.run("app.main:app", host=host, port=port, reload=True)
+    settings = get_settings()
+    uvicorn.run(
+        "app.main:app",
+        host=settings.app_host,
+        port=settings.app_port,
+        reload=settings.app_env.lower() == "development",
+    )
