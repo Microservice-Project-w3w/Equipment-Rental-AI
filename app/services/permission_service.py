@@ -21,6 +21,8 @@ class PermissionService:
         "get_customer_info": "customer.profile.read",
     }
 
+    CHAT_ROLES = frozenset({"ADMIN", "MANAGER"})
+
     @staticmethod
     def _optional_int(value: Any) -> int | None:
         if value is None:
@@ -81,6 +83,11 @@ class PermissionService:
         if tool_name not in cls.TOOL_PERMISSIONS:
             return False
         return permission is None or permission in context.permissions
+
+    @classmethod
+    def can_use_chat(cls, context: UserContext) -> bool:
+        """Chat nghiệp vụ chỉ mở cho quản lý chi nhánh và quản trị viên."""
+        return bool(cls.CHAT_ROLES.intersection(context.roles))
 
     @classmethod
     def available_tools(cls, context: UserContext) -> list[str]:

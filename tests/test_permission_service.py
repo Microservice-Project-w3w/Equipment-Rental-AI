@@ -34,3 +34,20 @@ def test_extracts_real_identity_claim_shape():
         "get_pending_quotations",
     )
     assert not PermissionService.can_access_tool(context, "get_customer_info")
+    assert PermissionService.can_use_chat(context)
+
+
+def test_customer_role_cannot_use_management_chat():
+    token = jwt.encode(
+        {
+            "sub": "20",
+            "roles": ["CUSTOMER"],
+            "exp": datetime.now(timezone.utc) + timedelta(minutes=5),
+        },
+        "test-secret-with-at-least-32-bytes-long",
+        algorithm="HS256",
+    )
+
+    context = PermissionService.extract_user_context(token)
+
+    assert not PermissionService.can_use_chat(context)

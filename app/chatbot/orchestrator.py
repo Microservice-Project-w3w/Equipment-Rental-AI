@@ -211,6 +211,8 @@ class ChatOrchestrator:
 
     async def handle_message(self, message: str, token: str, conversation_id: str) -> dict[str, Any]:
         context, profile = await self._authenticate(token)
+        if not PermissionService.can_use_chat(context):
+            raise GatewayError(403, "AI chat chỉ dành cho Manager hoặc Administrator")
         tool_name, params = await self._select_tool(message, context)
 
         sources: list[dict[str, str]] = []
@@ -269,4 +271,6 @@ class ChatOrchestrator:
 
     async def clear_conversation(self, token: str, conversation_id: str) -> None:
         context, _ = await self._authenticate(token)
+        if not PermissionService.can_use_chat(context):
+            raise GatewayError(403, "AI chat chỉ dành cho Manager hoặc Administrator")
         await self.memory.clear(context.user_id, conversation_id)
