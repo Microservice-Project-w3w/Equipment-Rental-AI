@@ -74,9 +74,10 @@ class OllamaClient:
     async def check_health(self) -> dict[str, Any]:
         models = await self.list_models()
         names = [item.get("name") for item in models if item.get("name")]
+        available = self.model_is_available(self.model, names)
         return {
-            "status": "UP",
+            "status": "UP" if available else "DEGRADED",
             "configuredModel": self.model,
-            "modelAvailable": self.model_is_available(self.model, names),
+            "modelAvailable": available,
             "models": names,
         }

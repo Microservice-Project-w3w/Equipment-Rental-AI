@@ -8,6 +8,7 @@ from app.chatbot.orchestrator import ChatOrchestrator
 from app.clients.api_gateway_client import GatewayError
 from app.clients.ollama_client import OllamaError
 from app.schemas.chat import ChatRequest, ChatResponse
+from app.services.chat_limiter import ChatLimitError
 
 
 router = APIRouter(tags=["Chat"])
@@ -34,6 +35,9 @@ async def chat_endpoint(
             token=token,
             conversation_id=conversation_id,
         )
+    except ChatLimitError as exc:
+        raise HTTPException(status_code=429, detail=str(exc),
+                            headers={"Retry-After": str(exc.retry_after)}) from exc
     except GatewayError as exc:
         raise HTTPException(
             status_code=_gateway_http_status(exc),
@@ -59,3 +63,11 @@ async def clear_conversation(
             status_code=_gateway_http_status(exc),
             detail=exc.detail,
         ) from exc
+
+
+@router.get("/capabilities")
+async def chat_capabilities(token: Annotated[str, Depends(get_access_token)]) -> dict:
+    try:
+        return await orchestrator.capabilities(token)
+    except GatewayError as exc:
+        raise HTTPException(status_code=_gateway_http_status(exc), detail=exc.detail) from exc

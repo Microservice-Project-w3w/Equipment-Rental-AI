@@ -9,10 +9,11 @@ from app.core.config import Settings, get_settings
 
 
 class GatewayError(RuntimeError):
-    def __init__(self, status_code: int, detail: str):
+    def __init__(self, status_code: int, detail: str, *, fallback_eligible: bool = False):
         super().__init__(detail)
         self.status_code = status_code
         self.detail = detail
+        self.fallback_eligible = fallback_eligible
 
 
 class ApiGatewayClient:
@@ -29,6 +30,7 @@ class ApiGatewayClient:
         self.base_url = config.api_gateway_base_url.rstrip("/")
         self.timeout = config.api_gateway_timeout_seconds
         self.transport = transport
+        self.business_timeout = min(self.timeout, config.ai_db_api_timeout_seconds) if config.ai_db_fallback_enabled else self.timeout
 
     @classmethod
     def _validate_endpoint(cls, endpoint: str) -> str:
@@ -66,7 +68,7 @@ class ApiGatewayClient:
 
         try:
             async with httpx.AsyncClient(
-                timeout=self.timeout,
+                timeout=self.timeout if safe_endpoint.startswith(("/api/v1/auth/", "/gateway/health/")) else self.business_timeout,
                 transport=self.transport,
             ) as client:
                 response = await client.request(
@@ -80,6 +82,7 @@ class ApiGatewayClient:
             raise GatewayError(
                 503,
                 f"Không thể kết nối API Gateway tại {self.base_url}",
+                fallback_eligible=True,
             ) from exc
 
         if response.is_error:
@@ -90,7 +93,8 @@ class ApiGatewayClient:
                     detail = body.get("message") or body.get("detail") or detail
             except ValueError:
                 pass
-            raise GatewayError(response.status_code, detail)
+            raise GatewayError(response.status_code, detail,
+                               fallback_eligible=response.status_code in {502, 503, 504})
 
         if response.status_code == 204 or not response.content:
             return None

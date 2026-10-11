@@ -15,3 +15,10 @@ venv.bak/
 # Project specifics
 storage/*
 !storage/.gitkeep
+
+# Local Windows environment and build/test outputs
+.venv-win/
+*.egg-info/
+.pytest_cache/
+build/
+dist/
